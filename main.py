@@ -49,6 +49,31 @@ class Paddle(Turtle):
     def shoot(self):
         return self.xcor(), self.ycor() + 10
 
+class Alien(Turtle):
+    def __init__(self, position):
+        super().__init__()
+        self.shape("square")
+        self.color("white")
+        self.shapesize(stretch_wid=3, stretch_len=1)
+        self.setheading(90)
+        self.penup()
+        self.goto(position)
+
+    def right(self):
+        new_x = self.xcor() + 20
+        self.goto(new_x, self.ycor())
+
+    def left(self):
+        new_x = self.xcor() - 20
+        self.goto(new_x, self.ycor())
+
+    def shoot(self):
+        return self.xcor(), self.ycor() + 10
+
+    def disapper(self):
+        self.goto( 1000, 1000)
+
+
 class Ball(Turtle):
     def __init__(self, x, y):
         super().__init__()
@@ -61,6 +86,7 @@ class Ball(Turtle):
     def move(self):
         self.forward(20)
 
+
 # Setup screen
 screen = Screen()
 screen.setup(width=800, height=600)
@@ -70,8 +96,9 @@ screen.tracer(0)
 
 # Create paddle
 paddle = Paddle((0, -280))
+alien= Alien((0,220))
 
-# Shooting logic
+# paddle Shooting logic
 def fire_bullet():
     x, y = paddle.shoot()
     bullet = Ball(x, y)
@@ -79,7 +106,21 @@ def fire_bullet():
 
 # Store bullets
 bullets = []
+# alien movement & shooting logic
+alien_direction = "right"  # Initial movement direction
 
+def alien_move():
+    global alien_direction
+
+    if alien_direction == "right":
+        alien.right()
+        if alien.xcor() > 280:
+            alien_direction = "left"  # Change direction at right edge
+
+    elif alien_direction == "left":
+        alien.left()
+        if alien.xcor() < -280:
+            alien_direction = "right"  # Change direction at left edge
 # Keyboard bindings
 screen.listen()
 screen.onkey(paddle.right, "Right")
@@ -90,6 +131,10 @@ screen.onkey(fire_bullet, "Up")
 def game_loop():
     for bullet in bullets:
         bullet.move()
+    alien_move()
+    for bullet in bullets:
+        if alien.distance(bullet) < 50 :
+            alien.disapper()
     screen.update()
     screen.ontimer(game_loop, 50)
 
